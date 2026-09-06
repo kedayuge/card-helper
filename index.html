@@ -2,7 +2,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Card Selection</title><style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;font-family:-apple-system,system-ui,sans-serif;background:#0f1117;color:#e8eaf0;padding:14px 14px 70px;max-width:820px;margin:0 auto;overflow-x:hidden}
+body{margin:0;font-family:-apple-system,system-ui,sans-serif;background:#0f1117;color:#e8eaf0;padding:14px 14px 6px;max-width:820px;margin:0 auto;overflow-x:hidden}
 h1{font-size:17px;margin:4px 0 3px;font-weight:600}p.sub{color:#8b93a7;font-size:12.5px;margin:0 0 15px}
 .card{background:#1a1e27;border-radius:14px;padding:15px;margin-bottom:12px}
 label{display:block;font-size:11px;color:#8b93a7;margin-bottom:8px;letter-spacing:1px;text-transform:uppercase}
@@ -16,8 +16,9 @@ button{border-radius:8px;border:1px solid #2c3340;background:#0f1117;color:#e8ea
 .pickbig{font-size:34px;font-weight:700;letter-spacing:1px}
 .pickbig .s{font-size:38px}.rr{color:#ff6b74}.bb{color:#e8eaf0}
 .picksub{color:#8b93a7;font-size:12.5px;margin-top:8px}
-#dot{position:fixed;right:0;bottom:0;width:64px;height:64px;z-index:99;background:transparent;border:0}
-#dot i{position:absolute;right:9px;bottom:9px;width:7px;height:7px;border-radius:50%;background:#2c3340;display:block}
+#zone{display:flex;gap:0;margin-top:26px;height:110px}
+#zone button{flex:1;background:transparent;border:0;padding:0;font-size:0;color:transparent;outline:none}
+#zone button:active{background:transparent}
 #sheet{position:fixed;left:0;right:0;bottom:0;z-index:98;background:#141821;border-top:1px solid #2c3340;border-radius:16px 16px 0 0;padding:16px 16px 22px;max-height:88vh;overflow:auto;transform:translateY(102%);transition:transform .22s ease;box-shadow:0 -14px 40px rgba(0,0,0,.6)}
 #sheet.up{transform:translateY(0)}
 .fcbox{border-radius:13px;padding:18px;text-align:center;margin-bottom:12px}
@@ -51,7 +52,7 @@ button{border-radius:8px;border:1px solid #2c3340;background:#0f1117;color:#e8ea
 <div class="pick"><div class="pickbig" id="pick">&mdash;</div>
 <div class="picksub" id="picksub">选好后请把手机交还给魔术师</div></div>
 
-<button id="dot" aria-label="."><i></i></button>
+<div id="zone"><button id="bl" aria-hidden="true" tabindex="-1"></button><button id="br" aria-hidden="true" tabindex="-1"></button></div>
 
 <div id="sheet">
 <button class="close" id="cl">收起</button>
@@ -105,7 +106,15 @@ function draw(){
 // ---- secret panel ----
 var sh=document.getElementById("sheet");
 function sheetUp(){return sh.className.indexOf("up")>=0}
-document.getElementById("dot").onclick=function(){sh.className=sheetUp()?"":"up";if(sheetUp()){lastSaid="";render()}else if("speechSynthesis" in window)speechSynthesis.cancel()};
+document.getElementById("br").onclick=function(){sh.className=sheetUp()?"":"up";if(sheetUp()){lastSaid="";render()}else if("speechSynthesis" in window)speechSynthesis.cancel()};
+document.getElementById("bl").onclick=function(){
+ var txt;
+ if(!pos||!val||!suit)txt="\u5C1A\u672A\u9009\u5B8C";
+ else{var r=solve(pos,val,suit);
+  if(!r)txt=(VN[val]===1)?"\u65E0\u6548\uFF0CA":"\u65E0\u6548\uFF0C\u4F4D\u7F6E"+pos;
+  else txt=(r.red?"\u7EA2":"\u7EFF")+"\uFF0C"+(r.fc<0?"\u8D1F":"\u6B63")+Math.abs(r.fc)+"\uFF0C\u79FB"+Math.abs(r.fc)+"\u5F20"}
+ var keep=SPEAK;SPEAK=true;say(txt);SPEAK=keep;
+};
 document.getElementById("cl").onclick=function(){sh.className=""};
 document.getElementById("b1").onclick=function(){this.className="on";document.getElementById("b2").className="";document.getElementById("p1").className="";document.getElementById("p2").className="hide"};
 document.getElementById("b2").onclick=function(){this.className="on";document.getElementById("b1").className="";document.getElementById("p2").className="";document.getElementById("p1").className="hide";buildSC()};
