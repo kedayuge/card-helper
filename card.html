@@ -1,0 +1,170 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Card Selection</title><style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:-apple-system,system-ui,sans-serif;background:#0f1117;color:#e8eaf0;padding:14px 14px 70px;max-width:820px;margin:0 auto;overflow-x:hidden}
+h1{font-size:17px;margin:4px 0 3px;font-weight:600}p.sub{color:#8b93a7;font-size:12.5px;margin:0 0 15px}
+.card{background:#1a1e27;border-radius:14px;padding:15px;margin-bottom:12px}
+label{display:block;font-size:11px;color:#8b93a7;margin-bottom:8px;letter-spacing:1px;text-transform:uppercase}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:4px}
+.vg{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:9px}
+button{border-radius:8px;border:1px solid #2c3340;background:#0f1117;color:#e8eaf0;cursor:pointer;font-family:inherit}
+.grid button{padding:8px 0;font-size:13px}.vg button,.sg button{padding:11px 0;font-size:15px}
+.on{background:#3b6ef0!important;border-color:#3b6ef0!important;color:#fff!important;font-weight:700}
+.pick{background:#1a1e27;border-radius:14px;padding:18px;text-align:center}
+.pickbig{font-size:34px;font-weight:700;letter-spacing:1px}
+.pickbig .s{font-size:38px}.rr{color:#ff6b74}.bb{color:#e8eaf0}
+.picksub{color:#8b93a7;font-size:12.5px;margin-top:8px}
+#dot{position:fixed;right:0;bottom:0;width:64px;height:64px;z-index:99;background:transparent;border:0}
+#dot i{position:absolute;right:9px;bottom:9px;width:7px;height:7px;border-radius:50%;background:#2c3340;display:block}
+#sheet{position:fixed;left:0;right:0;bottom:0;z-index:98;background:#141821;border-top:1px solid #2c3340;border-radius:16px 16px 0 0;padding:16px 16px 22px;max-height:88vh;overflow:auto;transform:translateY(102%);transition:transform .22s ease;box-shadow:0 -14px 40px rgba(0,0,0,.6)}
+#sheet.up{transform:translateY(0)}
+.fcbox{border-radius:13px;padding:18px;text-align:center;margin-bottom:12px}
+.fcRED{background:linear-gradient(160deg,#4a161b,#2a0d10)}.fcGREEN{background:linear-gradient(160deg,#12401f,#08240f)}
+.fcNA{background:linear-gradient(160deg,#3a3410,#221e08)}
+.big{font-size:54px;font-weight:800;line-height:1;margin:2px 0 11px}
+.rd{color:#ff8d96}.gr{color:#6ee68f}.ye{color:#f5e07a;font-size:30px}
+.tag{display:inline-block;padding:6px 13px;border-radius:20px;font-size:13px;font-weight:600;margin:3px;background:rgba(255,255,255,.1)}
+.steps{font-size:15px;line-height:2.05}.k{display:inline-block;width:22px;height:22px;border-radius:50%;background:#3b6ef0;color:#fff;font-size:12px;text-align:center;line-height:22px;margin-right:9px;font-weight:700}
+.mono{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:#7d8598;line-height:1.9;margin-top:12px}
+.hint{font-size:12.5px;color:#f0d79a;background:#332b0e;border-radius:10px;padding:11px 13px;line-height:1.65}
+.close{position:absolute;right:14px;top:12px;font-size:12px;color:#8b93a7;padding:6px 10px;border:1px solid #2c3340}
+.hide{display:none}
+#sct{border-collapse:collapse;font-size:11.5px;font-family:ui-monospace,Menlo,monospace}
+#sct th,#sct td{padding:4px 6px;text-align:center;border:1px solid #262c38}
+#sct th{background:#232935;color:#c3cadb}#sct th.p2{color:#7d8598;font-weight:400}
+#sct td.r{color:#ff8d96;background:rgba(255,141,150,.07)}
+#sct td.g{color:#6ee68f;background:rgba(110,230,143,.07)}
+#sct td.lab{background:#3a3410;color:#f5e07a;font-weight:700}
+.mini{display:flex;gap:7px;margin-bottom:12px}.mini button{flex:1;padding:9px 4px;font-size:12px;font-weight:600;white-space:nowrap}
+</style></head><body>
+
+<h1>请自由选择</h1>
+<p class="sub">先选一个位置，再选一张牌。你的选择完全自由 —— 屏幕不会给出任何提示。</p>
+
+<div class="card"><label>位置 Position</label><div class="grid" id="pg"></div></div>
+<div class="card"><label>点数 Value</label>
+<div class="vg" id="vg"></div><div class="vg" id="vg2" style="margin-top:5px"></div>
+<label style="margin-top:15px">花色 Suit</label><div class="sg" id="sg"></div></div>
+
+<div class="pick"><div class="pickbig" id="pick">&mdash;</div>
+<div class="picksub" id="picksub">选好后请把手机交还给魔术师</div></div>
+
+<button id="dot" aria-label="."><i></i></button>
+
+<div id="sheet">
+<button class="close" id="cl">收起</button>
+<div class="mini"><button id="b1" class="on">结果</button><button id="b2">卡片</button><button id="b3">🔊 语音 开</button><button id="b4">↻ 重读</button></div>
+<div id="p1">
+<div class="fcbox" id="fcbox"><div class="big" id="fc">&mdash;</div><div id="tags"></div></div>
+<div id="stepwrap" class="steps"></div>
+<div id="acewrap" class="hint hide"></div>
+<div class="mono" id="calc"></div>
+</div>
+<div id="p2" class="hide">
+<div style="font-size:12px;color:#8b93a7;margin-bottom:9px;line-height:1.6">行 = 偶数化点数（奇数先减 1）　列 = 位置。下排位置（+24）颜色相反。</div>
+<div style="overflow-x:auto"><table id="sct"></table></div></div>
+</div>
+
+<script>
+var STACK=["2C","4D","QC","9S","10C","7C","3D","4S","KD","9H","JD","6D","3S","4H","KS","9C","JS","6S","3H","4C","KH","8D","JH","6H","3C","5D","KC","8S","JC","6C","2D","5S","QD","8H","10D","7D","2S","5H","QS","8C","10S","7S","2H","5C","QH","9D","10H","7H"];
+var VN={"A":1,"2":2,"3":3,"4":4,"5":5,"6":6,"7":7,"8":8,"9":9,"10":10,"J":11,"Q":12,"K":13};
+var EV={2:"2C",4:"4C",6:"6C",8:"8C",10:"10C",12:"QC"};
+var CH={C:0,H:1,S:2,D:3},SY={C:"\u2663",H:"\u2665",S:"\u2660",D:"\u2666"};
+var VL=["A","2","3","4","5","6","7","8","9","10","J","Q","K"],SL=["C","H","S","D"];
+var pos=null,val=null,suit=null;
+function norm(x){x=((x%24)+24)%24;return x<=12?x:x-24}
+function solve(pos,val,suit){
+ var vn=VN[val];if(vn===1||pos>48)return null;
+ var card=val+suit,idx=STACK.indexOf(card)+1;
+ var ev=(vn%2)?vn-1:vn,evIdx=STACK.indexOf(EV[ev])+1;
+ var p24=(pos-1)%24+1,D=((p24-evIdx)%48+48)%48,rc=norm(D);
+ var red=(D<=12||D>=37);if(pos>24)red=!red;
+ var steps=CH[suit]+4*(vn%2),fc=norm(rc+6*steps);
+ return{fc:fc,red:red,rc:rc,D:D,idx:idx,evIdx:evIdx,ev:ev,p24:p24,steps:steps,card:card};
+}
+function mk(host,items,set){var h=document.getElementById(host);
+ items.forEach(function(t){var b=document.createElement("button");b.innerHTML=t.l;b.dataset.v=t.v;
+ b.onclick=function(){set(t.v);draw()};h.appendChild(b)})}
+mk("pg",Array.apply(null,{length:50}).map(function(_,i){return{l:i+1,v:i+1}}),function(v){pos=+v});
+mk("vg",VL.slice(0,7).map(function(v){return{l:v,v:v}}),function(v){val=v});
+mk("vg2",VL.slice(7).map(function(v){return{l:v,v:v}}),function(v){val=v});
+mk("sg",SL.map(function(s){return{l:SY[s]+" "+s,v:s}}),function(v){suit=v});
+function draw(){
+ document.querySelectorAll("#pg button").forEach(function(b){b.className=(+b.dataset.v===pos)?"on":""});
+ document.querySelectorAll("#vg button,#vg2 button").forEach(function(b){b.className=(b.dataset.v===val)?"on":""});
+ document.querySelectorAll("#sg button").forEach(function(b){b.className=(b.dataset.v===suit)?"on":""});
+ var t=[];
+ t.push(pos?("\u7B2C "+pos+" \u4F4D"):"\u4F4D\u7F6E ?");
+ if(val&&suit){var rr=(suit==="H"||suit==="D");t.push('<span class="'+(rr?"rr":"bb")+'">'+val+'<span class="s">'+SY[suit]+"</span></span>")}
+ else t.push("\u724C ?");
+ document.getElementById("pick").innerHTML=t.join("\u3000\u00B7\u3000");
+ if(sheetUp())render();
+}
+// ---- secret panel ----
+var sh=document.getElementById("sheet");
+function sheetUp(){return sh.className.indexOf("up")>=0}
+document.getElementById("dot").onclick=function(){sh.className=sheetUp()?"":"up";if(sheetUp()){lastSaid="";render()}else if("speechSynthesis" in window)speechSynthesis.cancel()};
+document.getElementById("cl").onclick=function(){sh.className=""};
+document.getElementById("b1").onclick=function(){this.className="on";document.getElementById("b2").className="";document.getElementById("p1").className="";document.getElementById("p2").className="hide"};
+document.getElementById("b2").onclick=function(){this.className="on";document.getElementById("b1").className="";document.getElementById("p2").className="";document.getElementById("p1").className="hide";buildSC()};
+
+var SPEAK=true;
+function say(t){
+ if(!SPEAK||!("speechSynthesis" in window))return;
+ try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t);
+ u.lang="zh-CN";u.rate=0.9;u.volume=1;speechSynthesis.speak(u)}catch(e){}
+}
+var lastSaid="";
+function render(){
+ var box=document.getElementById("fcbox"),fcE=document.getElementById("fc"),tg=document.getElementById("tags");
+ var sw=document.getElementById("stepwrap"),aw=document.getElementById("acewrap"),ca=document.getElementById("calc");
+ if(!pos||!val||!suit){box.className="fcbox fcNA";fcE.innerHTML='<span class="ye">\u5C1A\u672A\u9009\u5B8C</span>';
+  tg.innerHTML="";sw.innerHTML="";aw.className="hide";ca.innerHTML="";return}
+ var r=solve(pos,val,suit);
+ if(!r){var isAce=(VN[val]===1);
+  box.className="fcbox fcNA";
+  fcE.innerHTML='<span class="ye">'+(isAce?"A":("\u4F4D\u7F6E "+pos))+" \u2014 \u65E0 Final Code</span>";tg.innerHTML="";
+  sw.innerHTML="";ca.innerHTML="";aw.className="hint";say(isAce?"\u65E0\u6548\uFF0CA":"\u65E0\u6548\uFF0C\u4F4D\u7F6E"+pos);
+  aw.innerHTML=(isAce?"\u56DB\u5F20 A \u4E0D\u5728\u76D2\u4E2D\u724C\u5806\u91CC":"\u4F4D\u7F6E 49 / 50 \u8D85\u51FA 48 \u5F20\u724C\u5806")+"\uFF0C\u6CA1\u6709\u5BF9\u5E94\u7684 Final Code\u3002<br><br>"+
+  "<b>\u5E94\u5BF9\uFF08\u4E66\u4E2D Remark 1 / 3\uFF09\uFF1A</b><br>"+
+  "\u00B7 \u8BF7\u4ED6\u7EE7\u7EED\u653E\u724C\u3001\u60F3\u505C\u518D\u505C\uFF0C\u81EA\u7136\u907F\u5F00 A<br>"+
+  "\u00B7 \u6216\u76F4\u63A5\u8BF4\u201C\u4F60\u592A\u5BB9\u6613\u4E86\uFF0C\u6BCF\u4E2A\u4EBA\u90FD\u9009 A\u201D\uFF0C\u4ECE\u53E3\u888B\u53D8\u51FA\u540C\u4E00\u5F20 A\uFF0C\u518D\u8BF7\u4ED6\u91CD\u9009\u4E00\u5F20\u66F4\u968F\u673A\u7684\u724C<br>"+
+  "\u00B7 \u540C\u7406\uFF0C\u4F4D\u7F6E 49\u201352 \u4E5F\u4E0D\u53EF\u9009";
+  return}
+ aw.className="hide";
+ box.className="fcbox fc"+(r.red?"RED":"GREEN");
+ fcE.innerHTML='<span class="'+(r.red?"rd":"gr")+'">\u25CF '+(r.fc>0?"+":"")+r.fc+"</span>";
+ tg.innerHTML='<span class="tag">'+(r.red?"\u7EA2 \u00B7 \u4E0D\u5207":"\u7EFF \u00B7 \u5207\u724C")+
+  '</span><span class="tag">'+(r.fc<0?"\u8D1F \u00B7 \u7FFB\u9762":"\u6B63 \u00B7 \u4E0D\u7FFB")+
+  '</span><span class="tag">\u79FB '+Math.abs(r.fc)+" \u5F20</span>";
+ var spoken=(r.red?"\u7EA2":"\u7EFF")+"\uFF0C"+(r.fc<0?"\u8D1F":"\u6B63")+Math.abs(r.fc)+"\uFF0C\u79FB"+Math.abs(r.fc)+"\u5F20";
+ if(spoken!==lastSaid){lastSaid=spoken;say(spoken)}
+ sw.innerHTML='<div><span class="k">1</span>'+(r.red?"<b>\u4E0D\u5207\u724C</b>\uFF08\u53EA\u6447\u76D2\u5B50\u5C55\u793A\uFF09":"<b>\u5207\u724C</b>\uFF08\u53F3\u53E0\u7FD8\u8D77\uFF0C\u5DE6\u53E0\u843D\u4E0B\uFF09")+"</div>"+
+  '<div><span class="k">2</span>'+(r.fc<0?"<b>\u76D2\u5B50\u4E0A\u4E0B\u7FFB\u8F6C</b>\uFF08\u724C\u9762\u671D\u4E0A\uFF09":"<b>\u4E0D\u7FFB\u76D2\u5B50</b>")+"</div>"+
+  '<div><span class="k">3</span>\u5E95\u90E8\u63A8 <b>'+Math.abs(r.fc)+"</b> \u5F20\u5230\u9876\u90E8"+(r.fc===0?"\uFF080 \u5F20\uFF0C\u4E0D\u52A8\uFF09":"")+"</div>";
+ ca.innerHTML="\u2460 "+val+" \u2192 "+r.ev+"C\uFF08idx "+r.evIdx+"\uFF09\u3000\u4F4D\u7F6E "+pos+" \u2192 "+r.p24+"<br>"+
+  "\u2461 RC = ("+r.p24+" \u2212 "+r.evIdx+") mod 24 = <b>"+(r.rc>0?"+":"")+r.rc+"</b>\u3000D="+r.D+" \u2192 "+((r.D<=12||r.D>=37)?"\u7EA2":"\u7EFF")+(pos>24?"\u3000\uFF08&gt;24 \u7FFB\u8F6C\uFF09":"")+"<br>"+
+  "\u2462 CHaSeD \u8D70 "+r.steps+" \u6B65 \u00D7 6<br>"+
+  "\u2463 FC = ("+pos+" \u2212 idx("+r.card+")="+r.idx+") mod 24 = <b>"+(r.fc>0?"+":"")+r.fc+"</b>";
+}
+
+document.getElementById("b3").onclick=function(){SPEAK=!SPEAK;
+ this.innerHTML=SPEAK?"\ud83d\udd0a \u8BED\u97F3 \u5F00":"\ud83d\udd07 \u8BED\u97F3 \u5173";
+ if(!SPEAK&&"speechSynthesis" in window)speechSynthesis.cancel();
+ if(SPEAK){lastSaid="";render()}};
+document.getElementById("b4").onclick=function(){lastSaid="";var s=SPEAK;SPEAK=true;render();SPEAK=s};
+var scDone=false;
+function buildSC(){if(scDone)return;scDone=true;
+ var h="<tr><th></th>";for(var p=1;p<=24;p++)h+="<th>"+p+"</th>";h+="</tr><tr><th></th>";
+ for(var p=1;p<=24;p++)h+='<th class="p2">'+(p+24)+"</th>";h+="</tr>";
+ [2,4,6,8,10,12].forEach(function(ev){
+  h+='<tr><td class="lab">'+(ev===10?"X":(ev===12?"Q":ev))+"</td>";
+  var idx=STACK.indexOf(EV[ev])+1;
+  for(var p=1;p<=24;p++){var D=((p-idx)%48+48)%48,red=(D<=12||D>=37);
+   h+='<td class="'+(red?"r":"g")+'">'+(norm(D)>0?"+":"")+norm(D)+"</td>"}
+  h+="</tr>"});
+ document.getElementById("sct").innerHTML=h}
+draw();
+</script></body></html>
