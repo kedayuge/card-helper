@@ -81,9 +81,14 @@ function solve(pos,val,suit){
  var card=val+suit,idx=STACK.indexOf(card)+1;
  var ev=(vn%2)?vn-1:vn,evIdx=STACK.indexOf(EV[ev])+1;
  var p24=(pos-1)%24+1,D=((p24-evIdx)%48+48)%48,rc=norm(D);
- var red=(D<=12||D>=37);if(pos>24)red=!red;
- var steps=CH[suit]+4*(vn%2),fc=norm(rc+6*steps);
- return{fc:fc,red:red,rc:rc,D:D,idx:idx,evIdx:evIdx,ev:ev,p24:p24,steps:steps,card:card};
+ var rcRed=(D<=12||D>=37);if(pos>24)rcRed=!rcRed;
+ var steps=CH[suit]+4*(vn%2);
+ var CYC=[[0,1],[6,1],[12,1],[-6,0],[0,0],[6,0],[-12,0],[-6,1]];
+ var si=-1;for(var q=0;q<8;q++){if(CYC[q][1]===(rcRed?1:0)&&Math.abs(rc-CYC[q][0])<=3){si=q;break}}
+ if(si<0){for(var q=0;q<8;q++){if(Math.abs(CYC[q][0]-12)<1&&Math.abs(rc-CYC[q][0])<=3){si=q;break}}}
+ var off=rc-CYC[si][0],sj=(si+steps)%8;
+ var fc=norm(CYC[sj][0]+off),red=(CYC[sj][1]===1),corner=(Math.abs(CYC[sj][0])===12);
+ return{fc:fc,red:red,corner:corner,rcRed:rcRed,si:si,sj:sj,rc:rc,D:D,idx:idx,evIdx:evIdx,ev:ev,p24:p24,steps:steps,card:card};
 }
 function mk(host,items,set){var h=document.getElementById(host);
  items.forEach(function(t){var b=document.createElement("button");b.innerHTML=t.l;b.dataset.v=t.v;
@@ -154,8 +159,8 @@ function render(){
   '<div><span class="k">2</span>'+(r.fc<0?"<b>\u76D2\u5B50\u4E0A\u4E0B\u7FFB\u8F6C</b>\uFF08\u724C\u9762\u671D\u4E0A\uFF09":"<b>\u4E0D\u7FFB\u76D2\u5B50</b>")+"</div>"+
   '<div><span class="k">3</span>\u5E95\u90E8\u63A8 <b>'+Math.abs(r.fc)+"</b> \u5F20\u5230\u9876\u90E8"+(r.fc===0?"\uFF080 \u5F20\uFF0C\u4E0D\u52A8\uFF09":"")+"</div>";
  ca.innerHTML="\u2460 "+val+" \u2192 "+r.ev+"C\uFF08idx "+r.evIdx+"\uFF09\u3000\u4F4D\u7F6E "+pos+" \u2192 "+r.p24+"<br>"+
-  "\u2461 RC = ("+r.p24+" \u2212 "+r.evIdx+") mod 24 = <b>"+(r.rc>0?"+":"")+r.rc+"</b>\u3000D="+r.D+" \u2192 "+((r.D<=12||r.D>=37)?"\u7EA2":"\u7EFF")+(pos>24?"\u3000\uFF08&gt;24 \u7FFB\u8F6C\uFF09":"")+"<br>"+
-  "\u2462 CHaSeD \u8D70 "+r.steps+" \u6B65 \u00D7 6<br>"+
+  "\u2461 RC = ("+r.p24+" \u2212 "+r.evIdx+") mod 24 = <b>"+(r.rc>0?"+":"")+r.rc+"</b>\u3000"+(r.rcRed?"\u7EA2":"\u7EFF")+(pos>24?"\uFF08&gt;24 \u5DF2\u7FFB\u8F6C\uFF09":"")+"<br>"+
+  "\u2462 \u57AB\u5B50\u70B9\u4F4D "+r.si+" \u2192 \u9017\u65F6\u9488 "+r.steps+" \u6B65 \u2192 \u70B9\u4F4D "+r.sj+"\uFF08"+(r.red?"\u7EA2\u533A":"\u7EFF\u533A")+"\uFF09"+(r.corner?" \u26A0\u00B112 \u89D2\u70B9":"")+"<br>"+
   "\u2463 FC = ("+pos+" \u2212 idx("+r.card+")="+r.idx+") mod 24 = <b>"+(r.fc>0?"+":"")+r.fc+"</b>";
 }
 
